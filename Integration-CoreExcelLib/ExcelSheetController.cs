@@ -6,6 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Excel = Microsoft.Office.Interop.Excel;
+using Newtonsoft.Json;
+
+using PolygonData;
 
 namespace Integration_CoreExcelLib
 {
@@ -34,6 +37,46 @@ namespace Integration_CoreExcelLib
 
             // Add event handlers
             Sheet.Change += Sheet_Change;
+
+            Startup();
+        }
+
+        /// <summary>
+        /// To be called when this object is created (Sheet becomes active).
+        /// </summary>
+        private void Startup()
+        {
+            // Read polygon data from the server
+            string jsonData;
+            using (System.Net.WebClient webclient = new System.Net.WebClient())
+            {
+                jsonData = webclient.DownloadString(
+                    "https://evilham.com/polygons.json");
+            }
+
+            // Convert json data to .net objects
+            List<AcadPolygon> acadPolys = JsonConvert.DeserializeObject<
+                List<AcadPolygon>>(jsonData);
+            Sheet.Cells[2, 3].Value = string.Format(
+                "{0} Polygons",acadPolys.Count);
+
+            // Start writing on line 6
+            int curRow = 6;
+            // Iterate through polygons read from json
+            foreach (AcadPolygon acadPoly in acadPolys)
+            {
+                // Write name in this row
+                Sheet.Cells[curRow, 3].Value = acadPoly.Name;
+                int curCol = 4;
+                // Write points in this row
+                foreach (AcadPolygon.Point acadPoint in acadPoly.Points)
+                {
+                    Sheet.Cells[curRow, curCol++].Value = acadPoint.X;
+                    Sheet.Cells[curRow, curCol++].Value = acadPoint.Y;
+                }
+                // Go to next row
+                ++curRow;
+            }
         }
 
         /// <summary>
@@ -43,31 +86,49 @@ namespace Integration_CoreExcelLib
         /// <param name="Target">Changed range</param>
         private void Sheet_Change(Excel.Range Target)
         {
-            // Let's add Cells on Column B, starting on B6 and stopping on
-            // first empty cell
-            if (Target.Row >= 6)
+            if (Target.Column >= 3 && Target.Row >= 6)
             {
-                Debug.WriteLine("A Cell was changed on a row after the sixth!");
+                Debug.WriteLine("A cell was changed in user region");
                 int curRow = 6; // Start on Row 6
-                double sum = 0.0;
-                // As long as the value on this row and column B is not empty
-                while (!string.IsNullOrWhiteSpace(Sheet.Cells[curRow, 2].Text))
+                // As long as the value on this row and column C is not empty
+                while (!string.IsNullOrWhiteSpace(Sheet.Cells[curRow, 3].Text))
                 {
-                    // Check the value
-                    double value = 0.0;
-                    try
+                    string polyType = Sheet.Cells[curRow, 3].Text;
+                    Debug.WriteLine(polyType);
+
+                    // 1. Read points
+                    List<Point2D> points = new List<Point2D>();
+                    int curCol = 4; // Start in Column D (1st point)
+                    // Keep going as long as there is an X value
+                    while (!string.IsNullOrWhiteSpace(Sheet.Cells[curRow, curCol].Text))
                     {
-                        value = (double)Sheet.Cells[curRow, 2].Value;
+                        double x = Sheet.Cells[curRow, curCol].Value;
+                        // Iterate through columns
+                        ++curCol;
+                        if (string.IsNullOrWhiteSpace(Sheet.Cells[curRow, curCol].Text))
+                            // if Y is not defined, ignore this X value
+                            break;
+                        double y = Sheet.Cells[curRow, curCol].Value;
+                        // Iterate through columns
+                        ++curCol;
+
+                        // Create and add point represented by these 2 cells
+                        Point2D point = new Point2D(x, y);
+                        points.Add(point);
                     }
-                    catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException)
-                    { }
-                    // Add value (or 0.0 if it wasn't a number)
-                    sum += value;
-                    // Keep iterating with next row
+                    Debug.WriteLine(string.Format(
+                        "{0} points were read for poly {1}.",
+                        points.Count, polyType));
+
+                    // 2. Create Polygon for this row
+                    Polygon poly = new Polygon(points.ToArray());
+
+                    // 3. Write surface and perimeter
+                    Sheet.Cells[curRow, 1].Value = poly.Area;
+
+                    // Iterate through rows
                     ++curRow;
                 }
-                // Put value on Cel B2
-                Sheet.Cells[2, 2].Value = sum;
             }
         }
 
