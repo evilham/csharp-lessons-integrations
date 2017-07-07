@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -42,10 +43,24 @@ namespace Integration_CoreExcelLib
         /// <param name="Target">Changed range</param>
         private void Sheet_Change(Excel.Range Target)
         {
-            // Write changed address in Cell B2.
-            // Careful: Indexes start with 1 in Excel!
-            Sheet.Cells[2, 2].Value = string.Format(
-                "Cell {0} was changed", Target.Address);
+            // Let's add Cells on Column B, starting on B6 and stopping on
+            // first empty cell
+            if (Target.Row >= 6)
+            {
+                Debug.WriteLine("A Cell was changed on a row after the sixth!");
+                int curRow = 6; // Start on Row 6
+                double sum = 0.0;
+                // As long as the value on this row and column B is not empty
+                while (!string.IsNullOrWhiteSpace(Sheet.Cells[curRow, 2].Text))
+                {
+                    // Add value
+                    sum += Sheet.Cells[curRow, 2].Value;
+                    // Keep iterating with next row
+                    ++curRow;
+                }
+                // Put value on Cel B2
+                Sheet.Cells[2, 2].Value = sum;
+            }
         }
 
         /// <summary>
