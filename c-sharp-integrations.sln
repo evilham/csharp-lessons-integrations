@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Integration-Excel2013", "In
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Integration-CoreExcelLib", "Integration-CoreExcelLib\Integration-CoreExcelLib.csproj", "{3FF8876C-EAC8-485D-82DA-7E9D331CB80A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Integration-Autocad", "Integration-Autocad\Integration-Autocad.csproj", "{E1D65548-8859-4582-81A4-BB5807909B58}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Integration-CoreLib", "Integration-CoreLib\Integration-CoreLib.csproj", "{C7453667-5623-44C6-8353-C04EDFA1E244}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +31,14 @@ Global
 		{3FF8876C-EAC8-485D-82DA-7E9D331CB80A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3FF8876C-EAC8-485D-82DA-7E9D331CB80A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3FF8876C-EAC8-485D-82DA-7E9D331CB80A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1D65548-8859-4582-81A4-BB5807909B58}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1D65548-8859-4582-81A4-BB5807909B58}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1D65548-8859-4582-81A4-BB5807909B58}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1D65548-8859-4582-81A4-BB5807909B58}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7453667-5623-44C6-8353-C04EDFA1E244}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7453667-5623-44C6-8353-C04EDFA1E244}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7453667-5623-44C6-8353-C04EDFA1E244}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7453667-5623-44C6-8353-C04EDFA1E244}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
