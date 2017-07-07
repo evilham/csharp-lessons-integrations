@@ -31,8 +31,21 @@ namespace Integration_CoreExcelLib
         {
             Sheet = worksheet;
 
-            // Write "Hello!" to Cell B2
-            Sheet.Cells[2, 2].value = "Hello!";
+            // Add event handlers
+            Sheet.Change += Sheet_Change;
+        }
+
+        /// <summary>
+        /// This method is called each time the sheet changes.
+        /// Use with caution.
+        /// </summary>
+        /// <param name="Target">Changed range</param>
+        private void Sheet_Change(Excel.Range Target)
+        {
+            // Write changed address in Cell B2.
+            // Careful: Indexes start with 1 in Excel!
+            Sheet.Cells[2, 2].Value = string.Format(
+                "Cell {0} was changed", Target.Address);
         }
 
         /// <summary>
@@ -44,6 +57,7 @@ namespace Integration_CoreExcelLib
             disposed = true;
 
             // Remove event handlers
+            Sheet.Change -= Sheet_Change;
 
             Sheet = null;
         }
