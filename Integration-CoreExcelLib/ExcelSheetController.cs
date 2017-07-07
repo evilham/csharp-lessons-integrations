@@ -57,11 +57,13 @@ namespace Integration_CoreExcelLib
             // Convert json data to .net objects
             List<AcadPolygon> acadPolys = JsonConvert.DeserializeObject<
                 List<AcadPolygon>>(jsonData);
-            Sheet.Cells[2, 3].Value = string.Format(
+            Sheet.Cells[3, 1].Value = string.Format(
                 "{0} Polygons",acadPolys.Count);
 
             // Start writing on line 6
             int curRow = 6;
+            // Don't react to changes
+            changed_with_code = true;
             // Iterate through polygons read from json
             foreach (AcadPolygon acadPoly in acadPolys)
             {
@@ -77,6 +79,9 @@ namespace Integration_CoreExcelLib
                 // Go to next row
                 ++curRow;
             }
+            CodeChanges();
+            // React to user changes
+            changed_with_code = false;
         }
 
         /// <summary>
@@ -86,51 +91,59 @@ namespace Integration_CoreExcelLib
         /// <param name="Target">Changed range</param>
         private void Sheet_Change(Excel.Range Target)
         {
+            if (changed_with_code) return;
+            changed_with_code = true;
             if (Target.Column >= 3 && Target.Row >= 6)
             {
                 Debug.WriteLine("A cell was changed in user region");
-                int curRow = 6; // Start on Row 6
-                // As long as the value on this row and column C is not empty
-                while (!string.IsNullOrWhiteSpace(Sheet.Cells[curRow, 3].Text))
+                CodeChanges();
+            }
+            changed_with_code = false;
+        }
+        private void CodeChanges()
+        {
+            int curRow = 6; // Start on Row 6
+                            // As long as the value on this row and column C is not empty
+            while (!string.IsNullOrWhiteSpace(Sheet.Cells[curRow, 3].Text))
+            {
+                string polyType = Sheet.Cells[curRow, 3].Text;
+                Debug.WriteLine(polyType);
+
+                // 1. Read points
+                List<Point2D> points = new List<Point2D>();
+                int curCol = 4; // Start in Column D (1st point)
+                                // Keep going as long as there is an X value
+                while (!string.IsNullOrWhiteSpace(Sheet.Cells[curRow, curCol].Text))
                 {
-                    string polyType = Sheet.Cells[curRow, 3].Text;
-                    Debug.WriteLine(polyType);
+                    double x = Sheet.Cells[curRow, curCol].Value;
+                    // Iterate through columns
+                    ++curCol;
+                    if (string.IsNullOrWhiteSpace(Sheet.Cells[curRow, curCol].Text))
+                        // if Y is not defined, ignore this X value
+                        break;
+                    double y = Sheet.Cells[curRow, curCol].Value;
+                    // Iterate through columns
+                    ++curCol;
 
-                    // 1. Read points
-                    List<Point2D> points = new List<Point2D>();
-                    int curCol = 4; // Start in Column D (1st point)
-                    // Keep going as long as there is an X value
-                    while (!string.IsNullOrWhiteSpace(Sheet.Cells[curRow, curCol].Text))
-                    {
-                        double x = Sheet.Cells[curRow, curCol].Value;
-                        // Iterate through columns
-                        ++curCol;
-                        if (string.IsNullOrWhiteSpace(Sheet.Cells[curRow, curCol].Text))
-                            // if Y is not defined, ignore this X value
-                            break;
-                        double y = Sheet.Cells[curRow, curCol].Value;
-                        // Iterate through columns
-                        ++curCol;
-
-                        // Create and add point represented by these 2 cells
-                        Point2D point = new Point2D(x, y);
-                        points.Add(point);
-                    }
-                    Debug.WriteLine(string.Format(
-                        "{0} points were read for poly {1}.",
-                        points.Count, polyType));
-
-                    // 2. Create Polygon for this row
-                    Polygon poly = new Polygon(points.ToArray());
-
-                    // 3. Write surface and perimeter
-                    Sheet.Cells[curRow, 1].Value = poly.Area;
-
-                    // Iterate through rows
-                    ++curRow;
+                    // Create and add point represented by these 2 cells
+                    Point2D point = new Point2D(x, y);
+                    points.Add(point);
                 }
+                Debug.WriteLine(string.Format(
+                    "{0} points were read for poly {1}.",
+                    points.Count, polyType));
+
+                // 2. Create Polygon for this row
+                Polygon poly = new Polygon(points.ToArray());
+
+                // 3. Write surface and perimeter
+                Sheet.Cells[curRow, 1].Value = poly.Area;
+
+                // Iterate through rows
+                ++curRow;
             }
         }
+        private bool changed_with_code = false;
 
         /// <summary>
         /// This controller is not needed any longer, perform cleanup.
