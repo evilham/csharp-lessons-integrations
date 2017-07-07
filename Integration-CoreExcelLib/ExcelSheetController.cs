@@ -53,8 +53,16 @@ namespace Integration_CoreExcelLib
                 // As long as the value on this row and column B is not empty
                 while (!string.IsNullOrWhiteSpace(Sheet.Cells[curRow, 2].Text))
                 {
-                    // Add value
-                    sum += Sheet.Cells[curRow, 2].Value;
+                    // Check the value
+                    double value = 0.0;
+                    try
+                    {
+                        value = (double)Sheet.Cells[curRow, 2].Value;
+                    }
+                    catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException)
+                    { }
+                    // Add value (or 0.0 if it wasn't a number)
+                    sum += value;
                     // Keep iterating with next row
                     ++curRow;
                 }
