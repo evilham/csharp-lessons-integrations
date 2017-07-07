@@ -30,6 +30,9 @@ namespace Integration_CoreExcelLib
         internal ExcelSheetController(Excel.Worksheet worksheet)
         {
             Sheet = worksheet;
+
+            // Write "Hello!" to Cell B2
+            Sheet.Cells[2, 2].value = "Hello!";
         }
 
         /// <summary>
